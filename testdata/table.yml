@@ -1,0 +1,4 @@
+---
+share_classes:
+  - isin VARCHAR PK
+  - portfolio_id INTEGER

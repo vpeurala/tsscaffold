@@ -1,3 +1,4 @@
+use std::collections::{BTreeMap};
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
@@ -37,9 +38,12 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
 fn insert<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
     let mut buffer = String::new();
     reader.read_to_string(&mut buffer)?;
-    writer.write(buffer.as_bytes());
-
     
-
+    let yaml_parse_result: Result<BTreeMap<String, Vec<String>>, serde_yaml::Error> = serde_yaml::from_str(&buffer);
+    
+    match yaml_parse_result {
+        Ok(yaml) => writer.write(b"Got some YAML")?,
+        Err(err) => writer.write(b"Got some error.")?
+    };
     Ok(())
 }
