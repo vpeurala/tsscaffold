@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::fmt;
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
@@ -25,13 +24,13 @@ enum TsScaffoldCommand {
 }
 
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
-    if let TsScaffoldCommand::Insert { input, output } = opt {
-        match (input, output) {
+    match opt {
+        TsScaffoldCommand::Insert { input, output } => match (input, output) {
             (None, None) => insert(io::stdin(), io::stdout())?,
             (Some(i), Some(o)) => insert(fs::File::open(i)?, fs::File::create(o)?)?,
             (None, Some(o)) => insert(io::stdin(), fs::File::create(o)?)?,
             (Some(i), None) => insert(fs::File::open(i)?, io::stdout())?,
-        }
+        },
     }
     Ok(())
 }
