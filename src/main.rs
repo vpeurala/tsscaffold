@@ -42,7 +42,7 @@ fn insert<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
     let yaml_parse_result: Result<BTreeMap<String, Vec<String>>, serde_yaml::Error> =
         serde_yaml::from_str(&buffer);
     return match yaml_parse_result {
-        Ok(yaml) => write!(writer, "Got some YAML: {:?}\n", yaml),
-        Err(err) => write!(writer, "Got some error: {:?}\n", err)
+        Ok(yaml) => write!(writer, "Got some YAML:\n{:?}\n", yaml),
+        Err(err) => write!(writer, "Invalid YAML:\n{:?}\n", err)
     };
 }
