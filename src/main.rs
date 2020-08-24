@@ -53,6 +53,12 @@ struct Table {
     columns: Vec<Column>,
 }
 
+impl Table {
+    fn get_column_names(&self) -> Vec<String> {
+        self.columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>()
+    }
+}
+
 #[derive(Debug)]
 struct Column {
     name: String,
@@ -82,8 +88,7 @@ fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
 fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
         write!(writer, "INSERT INTO {}", table.name);
-        let columns = &table.columns;
-        let column_names = columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>();
+        let column_names = &table.get_column_names();
         write!(writer, " ({})", column_names.join(", "));
         write!(writer, " VALUES :rows");
     }
