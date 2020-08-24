@@ -197,6 +197,7 @@ dependencies = [
 name = "tsscaffold"
 version = "0.1.0"
 dependencies = [
+ "heck",
  "serde",
  "serde_yaml",
  "structopt",

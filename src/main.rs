@@ -11,8 +11,8 @@ fn main() {
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "tsscaffold",
-    about = "Does useful stuff for you if you are writing a TS + Postgres application using PgTyped library."
+name = "tsscaffold",
+about = "Does useful stuff for you if you are writing a TS + Postgres application using PgTyped library."
 )]
 enum TsScaffoldCommand {
     Insert {
@@ -26,23 +26,70 @@ enum TsScaffoldCommand {
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
     match opt {
         TsScaffoldCommand::Insert { input, output } => match (input, output) {
-            (None, None) => insert(io::stdin(), io::stdout())?,
-            (Some(i), Some(o)) => insert(fs::File::open(i)?, fs::File::create(o)?)?,
-            (None, Some(o)) => insert(io::stdin(), fs::File::create(o)?)?,
-            (Some(i), None) => insert(fs::File::open(i)?, io::stdout())?,
+            (None, None) => parse_yaml(io::stdin(), io::stdout())?,
+            (Some(i), Some(o)) => parse_yaml(fs::File::open(i)?, fs::File::create(o)?)?,
+            (None, Some(o)) => parse_yaml(io::stdin(), fs::File::create(o)?)?,
+            (Some(i), None) => parse_yaml(fs::File::open(i)?, io::stdout())?,
         },
     }
     Ok(())
 }
 
-fn insert<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
+fn parse_yaml<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
     let mut buffer = String::new();
     reader.read_to_string(&mut buffer)?;
 
     let yaml_parse_result: Result<BTreeMap<String, Vec<String>>, serde_yaml::Error> =
         serde_yaml::from_str(&buffer);
     return match yaml_parse_result {
-        Ok(yaml) => write!(writer, "Got some YAML:\n{:?}\n", yaml),
+        Ok(yaml) => insert(yaml_to_tables(yaml), writer),
         Err(err) => write!(writer, "Invalid YAML:\n{:?}\n", err)
     };
+}
+
+#[derive(Debug)]
+struct Table {
+    name: String,
+    columns: Vec<Column>,
+}
+
+#[derive(Debug)]
+struct Column {
+    name: String,
+    sql_type: String,
+    is_pk: bool,
+}
+
+fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
+    let mut tables: Vec<Table> = vec![];
+    for (table, column_strings) in yaml.iter() {
+        let mut columns: Vec<Column> = vec![];
+        for column_string in column_strings.iter() {
+            columns.push(Column {
+                name: column_string.clone(),
+                sql_type: String::from("VRC"),
+                is_pk: false,
+            })
+        }
+        tables.push(Table {
+            name: table.clone(),
+            columns,
+        })
+    }
+    tables
+}
+
+fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
+    for table in tables.iter() {
+        writeln!(writer, "INSERT INTO {} ()", table.name);
+        let columns = &table.columns;
+    }
+    /*
+    for (table, columns) in yaml.iter() {
+        writeln!(writer, "INSERT INTO {} ({})", table, columns.join(", "))?;
+        writeln!(writer, "  VALUES :rows")?;
+        writeln!(writer, "  ON CONFLICT(pk_cols) :rows")?;
+    }
+     */
+    Ok(())
 }
