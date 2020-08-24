@@ -87,10 +87,10 @@ fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
 
 fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
-        write!(writer, "INSERT INTO {}", table.name);
+        writeln!(writer, "INSERT INTO {} (", table.name);
         let column_names = &table.get_column_names();
-        write!(writer, " ({})", column_names.join(", "));
-        write!(writer, " VALUES :rows");
+        writeln!(writer, "  {}", column_names.join(",\n  "));
+        writeln!(writer, ") VALUES :rows");
     }
     Ok(())
 }
