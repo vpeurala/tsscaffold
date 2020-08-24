@@ -83,8 +83,8 @@ fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
         write!(writer, "INSERT INTO {}", table.name);
         let columns = &table.columns;
-        let columnNames = columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>();
-        write!(writer, " ({})", columnNames.join(", "));
+        let column_names = columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>();
+        write!(writer, " ({})", column_names.join(", "));
         write!(writer, " VALUES :rows");
     }
     Ok(())
