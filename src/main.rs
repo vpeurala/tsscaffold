@@ -57,6 +57,14 @@ impl Table {
     fn get_column_names(&self) -> Vec<String> {
         self.columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>()
     }
+
+    fn get_pk_column_names(&self) -> Vec<String> {
+        self.columns.iter().filter(|c| c.is_pk).map(|c| c.name.clone()).collect::<Vec<String>>()
+    }
+
+    fn get_non_pk_column_names(&self) -> Vec<String> {
+        self.columns.iter().filter(|c| !c.is_pk).map(|c| c.name.clone()).collect::<Vec<String>>()
+    }
 }
 
 #[derive(Debug)]
@@ -91,6 +99,11 @@ fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
         let column_names = &table.get_column_names();
         writeln!(writer, "  {}", column_names.join(",\n  "));
         writeln!(writer, ") VALUES :rows");
+        writeln!(writer, "ON CONFLICT ({}) DO UPDATE SET ", table.get_pk_column_names().join(", "));
+        for non_pk_column_name in table.get_non_pk_column_names().iter() {
+            writeln!(writer, "  {} = EXCLUDED.{}", non_pk_column_name, non_pk_column_name);
+        }
+        writeln!(writer, ";");
     }
     Ok(())
 }
