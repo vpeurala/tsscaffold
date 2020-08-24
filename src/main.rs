@@ -81,15 +81,11 @@ fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
 
 fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
-        writeln!(writer, "INSERT INTO {} ()", table.name);
+        write!(writer, "INSERT INTO {}", table.name);
         let columns = &table.columns;
+        let columnNames = columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>();
+        write!(writer, " ({})", columnNames.join(", "));
+        write!(writer, " VALUES :rows");
     }
-    /*
-    for (table, columns) in yaml.iter() {
-        writeln!(writer, "INSERT INTO {} ({})", table, columns.join(", "))?;
-        writeln!(writer, "  VALUES :rows")?;
-        writeln!(writer, "  ON CONFLICT(pk_cols) :rows")?;
-    }
-     */
     Ok(())
 }
