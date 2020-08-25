@@ -16,7 +16,7 @@ about = "Does useful stuff for you if you are writing a TS + Postgres applicatio
 )]
 enum TsScaffoldCommand {
     Insert {
-        #[structopt(short = "i", long = "input", parse(from_os_str))]
+        #[structopt(parse(from_os_str))]
         input: Option<PathBuf>,
         #[structopt(short = "o", long = "output", parse(from_os_str))]
         output: Option<PathBuf>,
