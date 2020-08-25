@@ -1,3 +1,22 @@
 share_classes:
-  - isin VARCHAR PK
-  - portfolio_id INTEGER
+  - portfolio_id INTEGER PK
+  - share_class VARCHAR PK
+  - isin VARCHAR
+  - currency VARCHAR
+  - as_of_date DATE
+  - sales_status VARCHAR
+  - hex_code VARCHAR
+  - complexity VARCHAR
+  - subscription_fee VARCHAR
+  - redemption_fee VARCHAR
+  - management_fee VARCHAR
+  - running_costs VARCHAR
+  - ter_number VARCHAR
+  - currency_exchange_costs VARCHAR
+  - performance_renumeration VARCHAR
+  - fund_transaction_costs VARCHAR
+  - instrument_management_costs VARCHAR
+  - rules_fi VARCHAR
+  - rules_sv VARCHAR
+  - brochure_fi VARCHAR
+  - brochure_sv VARCHAR
