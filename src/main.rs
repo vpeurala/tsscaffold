@@ -10,6 +10,7 @@ extern crate heck;
 
 use heck::CamelCase;
 use heck::SnakeCase;
+use heck::MixedCase;
 
 fn main() {
     run(TsScaffoldCommand::from_args()).unwrap();
@@ -150,7 +151,8 @@ fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
         let column_names = &table.get_column_names();
         writeln!(writer, "/*");
         writeln!(writer, "@name Insert{}", table.name.to_camel_case());
-        writeln!(writer, "@param rows -> (({})...)", column_names.iter().map(|s| s.to_camel_case()).collect::<Vec<String>>().join(", "));
+        writeln!(writer, "@param rows -> (({})...)", column_names.iter().map(|s| s.to_mixed_case()).collect::<Vec<String>>().join(", "));
+        writeln!(writer, "*/");
         writeln!(writer, "INSERT INTO {} (", table.name);
         writeln!(writer, "  {}", column_names.join(",\n  "));
         writeln!(writer, ") VALUES :rows");
