@@ -1,11 +1,12 @@
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, Read, Write, Error, ErrorKind};
 use std::path::PathBuf;
 use structopt::StructOpt;
+use serde::export::fmt::Debug;
+use std::borrow::Borrow;
 
 fn main() {
-    println!("Hello, kuukkers!");
     run(TsScaffoldCommand::from_args()).unwrap();
 }
 
@@ -14,36 +15,56 @@ fn main() {
 name = "tsscaffold",
 about = "Does useful stuff for you if you are writing a TS + Postgres application using PgTyped library."
 )]
-enum TsScaffoldCommand {
-    Insert {
-        #[structopt(parse(from_os_str))]
-        input: Option<PathBuf>,
-        #[structopt(short = "o", long = "output", parse(from_os_str))]
-        output: Option<PathBuf>,
-    },
+struct TsScaffoldCommand {
+    #[structopt(parse(from_os_str))]
+    input: Option<PathBuf>,
+    #[structopt(short = "o", long = "output", parse(from_os_str))]
+    output: Option<PathBuf>,
+    #[structopt(subcommand)]
+    command: TsScaffoldSubCommand,
+}
+
+struct IO<R: Read, W: Write> {
+    input: R,
+    output: W,
+}
+
+#[derive(Debug, StructOpt)]
+enum TsScaffoldSubCommand {
+    Insert {},
+    CreateTable {},
 }
 
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
-    match opt {
-        TsScaffoldCommand::Insert { input, output } => match (input, output) {
-            (None, None) => parse_yaml(io::stdin(), io::stdout())?,
-            (Some(i), Some(o)) => parse_yaml(fs::File::open(i)?, fs::File::create(o)?)?,
-            (None, Some(o)) => parse_yaml(io::stdin(), fs::File::create(o)?)?,
-            (Some(i), None) => parse_yaml(fs::File::open(i)?, io::stdout())?,
-        },
-    }
-    Ok(())
+    let mut input: Box<dyn Read> = match opt.input {
+        None => Box::new(io::stdin()),
+        Some(i) => Box::new(fs::File::open(i)?)
+    };
+
+    let mut output: Box<dyn Write> = match opt.output {
+        None => Box::new(io::stdout()),
+        Some(o) => Box::new(fs::File::create(o)?)
+    };
+
+    let tables: Vec<Table> = parse_yaml(input)?;
+
+    match opt.command {
+        Insert => insert(tables, output),
+        CreateTable => unimplemented!()
+    };
+
+    return Ok(());
 }
 
-fn parse_yaml<R: Read, W: Write>(mut reader: R, mut writer: W) -> io::Result<()> {
+fn parse_yaml<R: Read>(mut reader: R) -> io::Result<Vec<Table>> {
     let mut buffer = String::new();
     reader.read_to_string(&mut buffer)?;
 
     let yaml_parse_result: Result<BTreeMap<String, Vec<String>>, serde_yaml::Error> =
         serde_yaml::from_str(&buffer);
     return match yaml_parse_result {
-        Ok(yaml) => insert(yaml_to_tables(yaml), writer),
-        Err(err) => write!(writer, "Invalid YAML:\n{:?}\n", err)
+        Ok(yaml) => Ok(yaml_to_tables(yaml)),
+        Err(err) => Err(Error::new(ErrorKind::InvalidInput, err.to_string()))
     };
 }
 
@@ -55,15 +76,26 @@ struct Table {
 
 impl Table {
     fn get_column_names(&self) -> Vec<String> {
-        self.columns.iter().map(|c| c.name.clone()).collect::<Vec<String>>()
+        self.columns
+            .iter()
+            .map(|c| c.name.clone())
+            .collect::<Vec<String>>()
     }
 
     fn get_pk_column_names(&self) -> Vec<String> {
-        self.columns.iter().filter(|c| c.is_pk).map(|c| c.name.clone()).collect::<Vec<String>>()
+        self.columns
+            .iter()
+            .filter(|c| c.is_pk)
+            .map(|c| c.name.clone())
+            .collect::<Vec<String>>()
     }
 
     fn get_non_pk_column_names(&self) -> Vec<String> {
-        self.columns.iter().filter(|c| !c.is_pk).map(|c| c.name.clone()).collect::<Vec<String>>()
+        self.columns
+            .iter()
+            .filter(|c| !c.is_pk)
+            .map(|c| c.name.clone())
+            .collect::<Vec<String>>()
     }
 }
 
@@ -99,9 +131,17 @@ fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
         let column_names = &table.get_column_names();
         writeln!(writer, "  {}", column_names.join(",\n  "));
         writeln!(writer, ") VALUES :rows");
-        writeln!(writer, "ON CONFLICT ({}) DO UPDATE SET ", table.get_pk_column_names().join(", "));
+        writeln!(
+            writer,
+            "ON CONFLICT ({}) DO UPDATE SET ",
+            table.get_pk_column_names().join(", ")
+        );
         for non_pk_column_name in table.get_non_pk_column_names().iter() {
-            writeln!(writer, "  {} = EXCLUDED.{}", non_pk_column_name, non_pk_column_name);
+            writeln!(
+                writer,
+                "  {} = EXCLUDED.{}",
+                non_pk_column_name, non_pk_column_name
+            );
         }
         writeln!(writer, ";");
     }
