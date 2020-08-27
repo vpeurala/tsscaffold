@@ -6,6 +6,11 @@ use structopt::StructOpt;
 use serde::export::fmt::Debug;
 use std::borrow::Borrow;
 
+extern crate heck;
+
+use heck::CamelCase;
+use heck::SnakeCase;
+
 fn main() {
     run(TsScaffoldCommand::from_args()).unwrap();
 }
@@ -142,8 +147,11 @@ fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
 
 fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
-        writeln!(writer, "INSERT INTO {} (", table.name);
         let column_names = &table.get_column_names();
+        writeln!(writer, "/*");
+        writeln!(writer, "@name Insert{}", table.name.to_camel_case());
+        writeln!(writer, "@param rows -> (({})...)", column_names.iter().map(|s| s.to_camel_case()).collect::<Vec<String>>().join(", "));
+        writeln!(writer, "INSERT INTO {} (", table.name);
         writeln!(writer, "  {}", column_names.join(",\n  "));
         writeln!(writer, ") VALUES :rows");
         writeln!(
