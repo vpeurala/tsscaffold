@@ -49,8 +49,8 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
     let tables: Vec<Table> = parse_yaml(input)?;
 
     match opt.command {
-        Insert => insert(tables, output),
-        CreateTable => unimplemented!()
+        TsScaffoldSubCommand::Insert {} => insert(tables, output),
+        TsScaffoldSubCommand::CreateTable {} => unimplemented!()
     };
 
     return Ok(());
