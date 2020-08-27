@@ -111,10 +111,25 @@ fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
     for (table, column_strings) in yaml.iter() {
         let mut columns: Vec<Column> = vec![];
         for column_string in column_strings.iter() {
+            let parts = column_string.split_whitespace();
+            let mut column_name = "";
+            let mut column_sql_type = "";
+            let mut column_is_part_of_primary_key = false;
+            for (index, part) in parts.enumerate() {
+                if index == 0 {
+                    column_name = part;
+                } else {
+                    if part.eq("PK") {
+                        column_is_part_of_primary_key = true;
+                    } else {
+                        column_sql_type = part;
+                    }
+                }
+            }
             columns.push(Column {
-                name: column_string.clone(),
-                sql_type: String::from("VRC"),
-                is_pk: false,
+                name: column_name.to_owned(),
+                sql_type: column_sql_type.to_owned(),
+                is_pk: column_is_part_of_primary_key,
             })
         }
         tables.push(Table {
