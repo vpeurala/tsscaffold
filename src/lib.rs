@@ -16,7 +16,7 @@ pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
         writeln!(writer, ") VALUES :rows");
         writeln!(
             writer,
-            "ON CONFLICT ({}) DO UPDATE SET ",
+            "ON CONFLICT ({}) DO UPDATE SET",
             table.get_pk_column_names().join(", ")
         );
         for non_pk_column_name in table.get_non_pk_column_names().iter() {
