@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use serde::export::fmt::Debug;
 use structopt::StructOpt;
 
-use tsscaffold::{insert, parse_yaml, Table};
+use tsscaffold::{create_table, insert, parse_yaml, Table};
 
 fn main() {
     run(TsScaffoldCommand::from_args()).unwrap();
@@ -48,7 +48,7 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
 
     match opt.command {
         TsScaffoldSubCommand::Insert {} => insert(tables, output)?,
-        TsScaffoldSubCommand::CreateTable {} => unimplemented!(),
+        TsScaffoldSubCommand::CreateTable {} => create_table(tables, output)?,
     };
 
     return Ok(());

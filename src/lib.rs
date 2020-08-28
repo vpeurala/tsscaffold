@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::collections::HashSet;
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -44,7 +45,13 @@ pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<(
         writeln!(writer, "CREATE TABLE {} (", table.name)?;
         let columns = &table.columns;
         for (idx, col) in columns.iter().enumerate() {
-            write!(writer, "    {} {} NOT NULL", col.name, col.sql_type)?;
+            write!(
+                writer,
+                "    {} {} {}",
+                col.name,
+                col.sql_type,
+                if col.is_nullable { "NULL" } else { "NOT NULL" }
+            )?;
             if idx != columns.len() - 1 {
                 writeln!(writer, ",")?;
             } else {
@@ -118,6 +125,7 @@ pub struct Column {
     name: String,
     sql_type: String,
     is_pk: bool,
+    is_nullable: bool,
 }
 
 pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
@@ -129,12 +137,15 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
             let mut column_name = "";
             let mut column_sql_type = "";
             let mut column_is_part_of_primary_key = false;
+            let mut column_is_nullable = false;
             for (index, part) in parts.enumerate() {
                 if index == 0 {
                     column_name = part;
                 } else {
                     if part.eq("PK") {
                         column_is_part_of_primary_key = true;
+                    } else if part.eq("NULLABLE") {
+                        column_is_nullable = true;
                     } else {
                         column_sql_type = part;
                     }
@@ -144,6 +155,7 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
                 name: column_name.to_owned(),
                 sql_type: column_sql_type.to_owned(),
                 is_pk: column_is_part_of_primary_key,
+                is_nullable: column_is_nullable,
             })
         }
         tables.push(Table {

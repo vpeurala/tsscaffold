@@ -1,0 +1,4 @@
+dummies:
+  - face_width INTEGER
+  - notes VARCHAR NULLABLE
+  - as_of_date DATE
