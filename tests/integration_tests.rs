@@ -1,7 +1,6 @@
 extern crate tsscaffold;
 
 use std::fs;
-use std::io::Write;
 use pretty_assertions::assert_eq;
 
 #[test]

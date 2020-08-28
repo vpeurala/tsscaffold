@@ -1,14 +1,9 @@
 extern crate heck;
 
-use std::borrow::Borrow;
-use std::collections::BTreeMap;
 use std::fs;
-use std::io::{self, Error, ErrorKind, Read, Write};
+use std::io::{self, Read, Write};
 use std::path::PathBuf;
 
-use heck::CamelCase;
-use heck::MixedCase;
-use heck::SnakeCase;
 use serde::export::fmt::Debug;
 use structopt::StructOpt;
 
@@ -32,11 +27,6 @@ struct TsScaffoldCommand {
     command: TsScaffoldSubCommand,
 }
 
-struct IO<R: Read, W: Write> {
-    input: R,
-    output: W,
-}
-
 #[derive(Debug, StructOpt)]
 enum TsScaffoldSubCommand {
     Insert {},
@@ -44,12 +34,12 @@ enum TsScaffoldSubCommand {
 }
 
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
-    let mut input: Box<dyn Read> = match opt.input {
+    let input: Box<dyn Read> = match opt.input {
         None => Box::new(io::stdin()),
         Some(i) => Box::new(fs::File::open(i)?)
     };
 
-    let mut output: Box<dyn Write> = match opt.output {
+    let output: Box<dyn Write> = match opt.output {
         None => Box::new(io::stdout()),
         Some(o) => Box::new(fs::File::create(o)?)
     };
@@ -57,7 +47,7 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
     let tables: Vec<Table> = parse_yaml(input)?;
 
     match opt.command {
-        TsScaffoldSubCommand::Insert {} => insert(tables, output),
+        TsScaffoldSubCommand::Insert {} => insert(tables, output)?,
         TsScaffoldSubCommand::CreateTable {} => unimplemented!()
     };
 
