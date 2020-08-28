@@ -43,23 +43,29 @@ pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<(
     for table in tables.iter() {
         writeln!(writer, "CREATE TABLE {} (", table.name)?;
         let columns = &table.columns;
-
-//            writeln!(writer, "    {} {} {}", c.name, c.sql_type, "NOT NULL")
-
-        writeln!(writer, ") VALUES :rows")?;
-        writeln!(
-            writer,
-            "ON CONFLICT ({}) DO UPDATE SET",
-            table.get_pk_column_names().join(", ")
-        )?;
-        for non_pk_column_name in table.get_non_pk_column_names().iter() {
+        for (idx, col) in columns.iter().enumerate() {
+            write!(writer, "    {} {} NOT NULL", col.name, col.sql_type)?;
+            if idx != columns.len() - 1 {
+                writeln!(writer, ",");
+            } else {
+                writeln!(writer, "\n);");
+            }
+        }
+        if columns.iter().any(|c| c.is_pk) {
+            let pk_columns = columns.iter().filter(|c| c.is_pk).collect::<Vec<&Column>>();
+            writeln!(writer, "");
             writeln!(
                 writer,
-                "  {} = EXCLUDED.{}",
-                non_pk_column_name, non_pk_column_name
-            )?;
+                "ALTER TABLE {} ADD CONSTRAINT {} PRIMARY KEY ({});",
+                &table.name,
+                table.name.clone() + &String::from("_pk"),
+                pk_columns
+                    .iter()
+                    .map(|c| c.name.clone())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            );
         }
-        writeln!(writer, ";")?;
     }
     Ok(())
 }

@@ -23,4 +23,3 @@ CREATE TABLE share_classes (
 );
 
 ALTER TABLE share_classes ADD CONSTRAINT share_classes_pk PRIMARY KEY (portfolio_id, share_class);
-
