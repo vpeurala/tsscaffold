@@ -1,11 +1,8 @@
 extern crate tsscaffold;
 
-use std::borrow::{Borrow, BorrowMut};
-use std::cell::RefCell;
 use std::fs;
-use std::io;
 use std::io::Write;
-use std::rc::Rc;
+use pretty_assertions::assert_eq;
 
 #[test]
 pub fn test_insert() {
@@ -15,6 +12,6 @@ pub fn test_insert() {
 
     let mut writer: Vec<u8> = Vec::new();
     tsscaffold::insert(tables, &mut writer).unwrap();
-    let actual = String::from_utf8(writer.to_vec()).unwrap();
+    let actual = String::from_utf8(writer).unwrap();
     assert_eq!(expected, actual);
 }
