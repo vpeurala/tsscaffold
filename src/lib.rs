@@ -46,14 +46,14 @@ pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<(
         for (idx, col) in columns.iter().enumerate() {
             write!(writer, "    {} {} NOT NULL", col.name, col.sql_type)?;
             if idx != columns.len() - 1 {
-                writeln!(writer, ",");
+                writeln!(writer, ",")?;
             } else {
-                writeln!(writer, "\n);");
+                writeln!(writer, "\n);")?;
             }
         }
         if columns.iter().any(|c| c.is_pk) {
             let pk_columns = columns.iter().filter(|c| c.is_pk).collect::<Vec<&Column>>();
-            writeln!(writer, "");
+            writeln!(writer, "")?;
             writeln!(
                 writer,
                 "ALTER TABLE {} ADD CONSTRAINT {} PRIMARY KEY ({});",
@@ -64,7 +64,7 @@ pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<(
                     .map(|c| c.name.clone())
                     .collect::<Vec<String>>()
                     .join(", ")
-            );
+            )?;
         }
     }
     Ok(())
