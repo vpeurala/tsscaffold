@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::collections::HashSet;
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -60,7 +59,7 @@ pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<(
         }
         if columns.iter().any(|c| c.is_pk) {
             let pk_columns = columns.iter().filter(|c| c.is_pk).collect::<Vec<&Column>>();
-            writeln!(writer, "")?;
+            writeln!(writer)?;
             writeln!(
                 writer,
                 "ALTER TABLE {} ADD CONSTRAINT {} PRIMARY KEY ({});",
@@ -141,14 +140,12 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
             for (index, part) in parts.enumerate() {
                 if index == 0 {
                     column_name = part;
+                } else if part.eq("PK") {
+                    column_is_part_of_primary_key = true;
+                } else if part.eq("NULLABLE") {
+                    column_is_nullable = true;
                 } else {
-                    if part.eq("PK") {
-                        column_is_part_of_primary_key = true;
-                    } else if part.eq("NULLABLE") {
-                        column_is_nullable = true;
-                    } else {
-                        column_sql_type = part;
-                    }
+                    column_sql_type = part;
                 }
             }
             columns.push(Column {
