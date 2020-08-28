@@ -1,4 +1,4 @@
-CREATE TABLE share_classes(
+CREATE TABLE share_classes (
     portfolio_id INTEGER NOT NULL,
     share_class VARCHAR NOT NULL,
     isin VARCHAR NOT NULL,

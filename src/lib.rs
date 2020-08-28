@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
-use std::io::{Error, ErrorKind, Read, Write};
 use std::io;
+use std::io::{Error, ErrorKind, Read, Write};
 
 use heck::{CamelCase, MixedCase};
 
@@ -9,10 +9,43 @@ pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
         let column_names = &table.get_column_names();
         writeln!(writer, "/*")?;
         writeln!(writer, "@name Insert{}", table.name.to_camel_case())?;
-        writeln!(writer, "@param rows -> (({})...)", column_names.iter().map(|s| s.to_mixed_case()).collect::<Vec<String>>().join(", "))?;
+        writeln!(
+            writer,
+            "@param rows -> (({})...)",
+            column_names
+                .iter()
+                .map(|s| s.to_mixed_case())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )?;
         writeln!(writer, "*/")?;
         writeln!(writer, "INSERT INTO {} (", table.name)?;
         writeln!(writer, "  {}", column_names.join(",\n  "))?;
+        writeln!(writer, ") VALUES :rows")?;
+        writeln!(
+            writer,
+            "ON CONFLICT ({}) DO UPDATE SET",
+            table.get_pk_column_names().join(", ")
+        )?;
+        for non_pk_column_name in table.get_non_pk_column_names().iter() {
+            writeln!(
+                writer,
+                "  {} = EXCLUDED.{}",
+                non_pk_column_name, non_pk_column_name
+            )?;
+        }
+        writeln!(writer, ";")?;
+    }
+    Ok(())
+}
+
+pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
+    for table in tables.iter() {
+        writeln!(writer, "CREATE TABLE {} (", table.name)?;
+        let columns = &table.columns;
+
+//            writeln!(writer, "    {} {} {}", c.name, c.sql_type, "NOT NULL")
+
         writeln!(writer, ") VALUES :rows")?;
         writeln!(
             writer,
@@ -39,7 +72,7 @@ pub fn parse_yaml<R: Read>(mut reader: R) -> io::Result<Vec<Table>> {
         serde_yaml::from_str(&buffer);
     return match yaml_parse_result {
         Ok(yaml) => Ok(yaml_to_tables(yaml)),
-        Err(err) => Err(Error::new(ErrorKind::InvalidInput, err.to_string()))
+        Err(err) => Err(Error::new(ErrorKind::InvalidInput, err.to_string())),
     };
 }
 
@@ -114,4 +147,3 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
     }
     tables
 }
-
