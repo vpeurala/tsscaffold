@@ -27,14 +27,19 @@ pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
             "ON CONFLICT ({}) DO UPDATE SET",
             table.get_pk_column_names().join(", ")
         )?;
-        for non_pk_column_name in table.get_non_pk_column_names().iter() {
+        for (idx, non_pk_column_name) in table.get_non_pk_column_names().iter().enumerate() {
             writeln!(
                 writer,
-                "  {} = EXCLUDED.{}",
-                non_pk_column_name, non_pk_column_name
+                "  {} = EXCLUDED.{}{}",
+                non_pk_column_name,
+                non_pk_column_name,
+                if idx != (table.get_non_pk_column_names().len() - 1) {
+                    ","
+                } else {
+                    ";"
+                }
             )?;
         }
-        writeln!(writer, ";")?;
     }
     Ok(())
 }
