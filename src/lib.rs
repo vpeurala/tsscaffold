@@ -101,24 +101,24 @@ pub struct Table {
 
 impl Table {
     pub fn get_column_names(&self) -> Vec<String> {
-        self.columns
-            .iter()
-            .map(|c| c.name.clone())
-            .collect::<Vec<String>>()
+        self.filter_columns_and_extract_names(|_c: &&Column| true)
     }
 
     pub fn get_pk_column_names(&self) -> Vec<String> {
-        self.columns
-            .iter()
-            .filter(|c| c.is_pk)
-            .map(|c| c.name.clone())
-            .collect::<Vec<String>>()
+        self.filter_columns_and_extract_names(|c: &&Column| c.is_pk)
     }
 
     pub fn get_non_pk_column_names(&self) -> Vec<String> {
+        self.filter_columns_and_extract_names(|c: &&Column| !c.is_pk)
+    }
+
+    fn filter_columns_and_extract_names(
+        &self,
+        predicate: impl FnMut(&&Column) -> bool,
+    ) -> Vec<String> {
         self.columns
             .iter()
-            .filter(|c| !c.is_pk)
+            .filter(predicate)
             .map(|c| c.name.clone())
             .collect::<Vec<String>>()
     }
