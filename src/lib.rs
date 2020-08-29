@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -134,25 +134,26 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
         for column_string in column_strings.iter() {
             let parts = column_string.split_whitespace();
             let mut column_name = "";
-            let mut column_sql_type = "";
-            let mut column_is_part_of_primary_key = false;
-            let mut column_is_nullable = false;
+            let mut column_properties: HashSet<String> = HashSet::new();
             for (index, part) in parts.enumerate() {
                 if index == 0 {
                     column_name = part;
-                } else if part.eq("PK") {
-                    column_is_part_of_primary_key = true;
-                } else if part.eq("NULLABLE") {
-                    column_is_nullable = true;
                 } else {
-                    column_sql_type = part;
+                    column_properties.insert(part.to_uppercase());
                 }
             }
+            let mut keywords: HashSet<String> = HashSet::new();
+            keywords.insert(String::from("PK"));
+            keywords.insert(String::from("NULLABLE"));
             columns.push(Column {
                 name: column_name.to_owned(),
-                sql_type: column_sql_type.to_owned(),
-                is_pk: column_is_part_of_primary_key,
-                is_nullable: column_is_nullable,
+                is_pk: column_properties.contains("PK"),
+                is_nullable: column_properties.contains("NULLABLE"),
+                sql_type: column_properties
+                    .difference(&keywords)
+                    .next()
+                    .unwrap()
+                    .clone(),
             })
         }
         tables.push(Table {
