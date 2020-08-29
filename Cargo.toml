@@ -8,7 +8,10 @@ edition = "2018"
 
 [dependencies]
 heck = "0.3.1"
-pretty_assertions = "0.6.1"
 serde = "1.0"
 serde_yaml = "0.8"
 structopt = "0.3"
+
+[dev-dependencies]
+grcov = "0.5.15"
+pretty_assertions = "0.6.1"
