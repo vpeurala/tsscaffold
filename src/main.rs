@@ -1,5 +1,3 @@
-extern crate heck;
-
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
