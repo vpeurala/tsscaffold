@@ -7,8 +7,10 @@ use std::path::PathBuf;
 use serde::export::fmt::Debug;
 use structopt::StructOpt;
 
+use tsscaffold::commands::create_table;
+use tsscaffold::commands::insert;
 use tsscaffold::domain::Table;
-use tsscaffold::{create_table, insert, parse_yaml};
+use tsscaffold::parse_yaml;
 
 fn main() {
     run(TsScaffoldCommand::from_args()).unwrap();

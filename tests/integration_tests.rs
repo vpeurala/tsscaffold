@@ -3,14 +3,18 @@ extern crate tsscaffold;
 use pretty_assertions::assert_eq;
 use std::fs;
 
+use tsscaffold::commands::create_table;
+use tsscaffold::commands::insert;
+use tsscaffold::parse_yaml;
+
 #[test]
 pub fn insert_smoke() {
     let input: fs::File = fs::File::open("testdata/table_1.yml").unwrap();
-    let tables = tsscaffold::parse_yaml(input).unwrap();
+    let tables = parse_yaml(input).unwrap();
     let expected = fs::read_to_string("testdata/insert_2.sql").unwrap();
 
     let mut writer: Vec<u8> = Vec::new();
-    tsscaffold::insert(tables, &mut writer).unwrap();
+    insert(tables, &mut writer).unwrap();
     let actual = String::from_utf8(writer).unwrap();
     assert_eq!(expected, actual);
 }
@@ -18,11 +22,11 @@ pub fn insert_smoke() {
 #[test]
 pub fn create_table_smoke() {
     let input: fs::File = fs::File::open("testdata/table_1.yml").unwrap();
-    let tables = tsscaffold::parse_yaml(input).unwrap();
+    let tables = parse_yaml(input).unwrap();
     let expected = fs::read_to_string("testdata/create_table_1.sql").unwrap();
 
     let mut writer: Vec<u8> = Vec::new();
-    tsscaffold::create_table(tables, &mut writer).unwrap();
+    create_table(tables, &mut writer).unwrap();
     let actual = String::from_utf8(writer).unwrap();
     assert_eq!(expected, actual);
 }
@@ -30,11 +34,11 @@ pub fn create_table_smoke() {
 #[test]
 pub fn create_table_supports_nullable_keyword() {
     let input: fs::File = fs::File::open("testdata/table_2.yml").unwrap();
-    let tables = tsscaffold::parse_yaml(input).unwrap();
+    let tables = parse_yaml(input).unwrap();
     let expected = fs::read_to_string("testdata/create_table_2.sql").unwrap();
 
     let mut writer: Vec<u8> = Vec::new();
-    tsscaffold::create_table(tables, &mut writer).unwrap();
+    create_table(tables, &mut writer).unwrap();
     let actual = String::from_utf8(writer).unwrap();
     assert_eq!(expected, actual);
 }

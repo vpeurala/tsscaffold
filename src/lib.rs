@@ -1,93 +1,16 @@
 #[macro_use]
 extern crate maplit;
-
-use std::collections::{BTreeMap, HashSet};
-use std::io;
-use std::io::{Error, ErrorKind, Read, Write};
-
-use heck::CamelCase;
-use heck::MixedCase;
+extern crate heck;
 
 pub mod domain;
 
-use crate::domain::{Column, Table};
+pub mod commands;
 
-pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
-    for table in tables.iter() {
-        let column_names = &table.get_column_names();
-        writeln!(writer, "/*")?;
-        writeln!(writer, "@name Insert{}", table.name.to_camel_case())?;
-        writeln!(
-            writer,
-            "@param rows -> (({})...)",
-            column_names
-                .iter()
-                .map(|s| s.to_mixed_case())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )?;
-        writeln!(writer, "*/")?;
-        writeln!(writer, "INSERT INTO {} (", table.name)?;
-        writeln!(writer, "  {}", column_names.join(",\n  "))?;
-        writeln!(writer, ") VALUES :rows")?;
-        writeln!(
-            writer,
-            "ON CONFLICT ({}) DO UPDATE SET",
-            table.get_pk_column_names().join(", ")
-        )?;
-        for (idx, non_pk_column_name) in table.get_non_pk_column_names().iter().enumerate() {
-            writeln!(
-                writer,
-                "  {} = EXCLUDED.{}{}",
-                non_pk_column_name,
-                non_pk_column_name,
-                if idx != (table.get_non_pk_column_names().len() - 1) {
-                    ","
-                } else {
-                    ";"
-                }
-            )?;
-        }
-    }
-    Ok(())
-}
+use std::collections::{BTreeMap, HashSet};
+use std::io;
+use std::io::{Error, ErrorKind, Read};
 
-pub fn create_table<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
-    for table in tables.iter() {
-        writeln!(writer, "CREATE TABLE {} (", table.name)?;
-        let columns = &table.columns;
-        for (idx, col) in columns.iter().enumerate() {
-            write!(
-                writer,
-                "    {} {} {}",
-                col.name,
-                col.sql_type,
-                if col.is_nullable { "NULL" } else { "NOT NULL" }
-            )?;
-            if idx != columns.len() - 1 {
-                writeln!(writer, ",")?;
-            } else {
-                writeln!(writer, "\n);")?;
-            }
-        }
-        if columns.iter().any(|c| c.is_pk) {
-            let pk_columns = columns.iter().filter(|c| c.is_pk).collect::<Vec<&Column>>();
-            writeln!(writer)?;
-            writeln!(
-                writer,
-                "ALTER TABLE {} ADD CONSTRAINT {} PRIMARY KEY ({});",
-                &table.name,
-                table.name.clone() + &String::from("_pk"),
-                pk_columns
-                    .iter()
-                    .map(|c| c.name.clone())
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            )?;
-        }
-    }
-    Ok(())
-}
+use domain::{Column, Table};
 
 pub fn parse_yaml<R: Read>(mut reader: R) -> io::Result<Vec<Table>> {
     let mut buffer = String::new();
