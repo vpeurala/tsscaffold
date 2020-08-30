@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate maplit;
+
 use std::collections::{BTreeMap, HashSet};
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
@@ -147,9 +150,7 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
                     column_properties.insert(part.to_uppercase());
                 }
             }
-            let mut keywords: HashSet<String> = HashSet::new();
-            keywords.insert(String::from("PK"));
-            keywords.insert(String::from("NULLABLE"));
+            let keywords = hashset! {String::from("PK"), String::from("NULLABLE")};
             columns.push(Column {
                 name: column_name.to_owned(),
                 is_pk: column_properties.contains("PK"),
