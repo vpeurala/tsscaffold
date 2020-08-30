@@ -5,7 +5,12 @@ use std::collections::{BTreeMap, HashSet};
 use std::io;
 use std::io::{Error, ErrorKind, Read, Write};
 
-use heck::{CamelCase, MixedCase};
+use heck::CamelCase;
+use heck::MixedCase;
+
+pub mod domain;
+
+use crate::domain::{Column, Table};
 
 pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
@@ -94,45 +99,6 @@ pub fn parse_yaml<R: Read>(mut reader: R) -> io::Result<Vec<Table>> {
         Ok(yaml) => Ok(yaml_to_tables(yaml)),
         Err(err) => Err(Error::new(ErrorKind::InvalidInput, err.to_string())),
     };
-}
-
-#[derive(Debug)]
-pub struct Table {
-    name: String,
-    columns: Vec<Column>,
-}
-
-impl Table {
-    pub fn get_column_names(&self) -> Vec<String> {
-        self.filter_columns_and_extract_names(|_c: &&Column| true)
-    }
-
-    pub fn get_pk_column_names(&self) -> Vec<String> {
-        self.filter_columns_and_extract_names(|c: &&Column| c.is_pk)
-    }
-
-    pub fn get_non_pk_column_names(&self) -> Vec<String> {
-        self.filter_columns_and_extract_names(|c: &&Column| !c.is_pk)
-    }
-
-    fn filter_columns_and_extract_names(
-        &self,
-        predicate: impl FnMut(&&Column) -> bool,
-    ) -> Vec<String> {
-        self.columns
-            .iter()
-            .filter(predicate)
-            .map(|c| c.name.clone())
-            .collect::<Vec<String>>()
-    }
-}
-
-#[derive(Debug)]
-pub struct Column {
-    name: String,
-    sql_type: String,
-    is_pk: bool,
-    is_nullable: bool,
 }
 
 pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {

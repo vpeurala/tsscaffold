@@ -7,7 +7,8 @@ use std::path::PathBuf;
 use serde::export::fmt::Debug;
 use structopt::StructOpt;
 
-use tsscaffold::{create_table, insert, parse_yaml, Table};
+use tsscaffold::domain::Table;
+use tsscaffold::{create_table, insert, parse_yaml};
 
 fn main() {
     run(TsScaffoldCommand::from_args()).unwrap();
@@ -46,8 +47,8 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
 
     let tables: Vec<Table> = parse_yaml(input)?;
 
-    return match opt.command {
+    match opt.command {
         TsScaffoldSubCommand::Insert {} => insert(tables, output),
         TsScaffoldSubCommand::CreateTable {} => create_table(tables, output),
-    };
+    }
 }
