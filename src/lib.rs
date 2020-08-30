@@ -1,6 +1,6 @@
+extern crate heck;
 #[macro_use]
 extern crate maplit;
-extern crate heck;
 
 pub mod domain;
 
