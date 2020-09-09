@@ -7,6 +7,7 @@ use structopt::StructOpt;
 
 use tsscaffold::commands::create_table;
 use tsscaffold::commands::insert;
+use tsscaffold::commands::insert_interface;
 use tsscaffold::domain::Table;
 use tsscaffold::parse_yaml;
 
@@ -32,6 +33,7 @@ struct TsScaffoldCommand {
 enum TsScaffoldSubCommand {
     Insert {},
     CreateTable {},
+    InsertInterface {},
 }
 
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
@@ -50,5 +52,6 @@ fn run(opt: TsScaffoldCommand) -> io::Result<()> {
     match opt.command {
         TsScaffoldSubCommand::Insert {} => insert(tables, output),
         TsScaffoldSubCommand::CreateTable {} => create_table(tables, output),
+        TsScaffoldSubCommand::InsertInterface {} => insert_interface(tables, output),
     }
 }

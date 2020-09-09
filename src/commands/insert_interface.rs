@@ -25,7 +25,7 @@ pub fn insert_interface<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Resu
                 }
             )?;
         }
-        write!(writer, "}}")?;
+        writeln!(writer, "}}")?;
     }
     Ok(())
 }
