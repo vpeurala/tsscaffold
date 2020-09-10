@@ -33,9 +33,13 @@ pub fn insert_interface<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Resu
 fn ts_type(sql_type: &String) -> String {
     match &sql_type.clone().to_uppercase()[..] {
         "VARCHAR" => String::from("string"),
+        "TEXT" => String::from("string"),
         "INTEGER" => String::from("number"),
         "DECIMAL" => String::from("number"),
+        "INT" => String::from("number"),
+        "SMALLINT" => String::from("number"),
         "DATE" => String::from("Date"),
-        otherwise => panic!("Unknown SQL type: {}", otherwise),
+        "BOOL" => String::from("boolean"),
+        otherwise => String::from(otherwise)
     }
 }
