@@ -4,7 +4,7 @@ use pretty_assertions::assert_eq;
 use std::fs;
 
 use tsscaffold::commands::create_table;
-use tsscaffold::commands::insert;
+use tsscaffold::commands::insert_sql;
 use tsscaffold::commands::insert_interface;
 use tsscaffold::parse_yaml;
 
@@ -15,7 +15,7 @@ pub fn insert_smoke() {
     let expected = fs::read_to_string("testdata/insert_2.sql").unwrap();
 
     let mut writer: Vec<u8> = Vec::new();
-    insert(tables, &mut writer).unwrap();
+    insert_sql(tables, &mut writer).unwrap();
     let actual = String::from_utf8(writer).unwrap();
     assert_eq!(expected, actual);
 }

@@ -4,7 +4,7 @@ use heck::MixedCase;
 use std::io;
 use std::io::Write;
 
-pub fn insert<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
+pub fn insert_sql<W: Write>(tables: Vec<Table>, mut writer: W) -> io::Result<()> {
     for table in tables.iter() {
         let column_names = &table.get_column_names();
         writeln!(writer, "/*")?;

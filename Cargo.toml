@@ -1,6 +1,6 @@
 [package]
 name = "tsscaffold"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Ville Peurala <ville.peurala@gmail.com>"]
 edition = "2018"
 
