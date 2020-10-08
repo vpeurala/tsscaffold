@@ -17,8 +17,7 @@ pub fn main_smoke() {
         .arg("create-table")
         .assert();
     assert
-        .failure()
-        .code(101)
+        .success()
         .stdout("CREATE TABLE share_classes");
 }
 
