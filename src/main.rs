@@ -11,8 +11,8 @@ use tsscaffold::commands::insert_interface;
 use tsscaffold::domain::Table;
 use tsscaffold::{parse_yaml};
 
-fn main() {
-    run(TsScaffoldCommand::from_args()).unwrap();
+fn main() -> io::Result<()> {
+    run(TsScaffoldCommand::from_args())
 }
 
 #[derive(Debug, StructOpt)]

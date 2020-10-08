@@ -7,6 +7,20 @@ use tsscaffold::commands::create_table;
 use tsscaffold::commands::insert_sql;
 use tsscaffold::commands::insert_interface;
 use tsscaffold::parse_yaml;
+use assert_cmd::Command;
+
+#[test]
+pub fn main_smoke() {
+    let mut cmd = Command::cargo_bin("tsscaffold").unwrap();
+    let assert = cmd
+        .arg("testdata/table_1.yml")
+        .arg("create-table")
+        .assert();
+    assert
+        .failure()
+        .code(101)
+        .stdout("CREATE TABLE share_classes");
+}
 
 #[test]
 pub fn insert_smoke() {

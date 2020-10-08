@@ -14,5 +14,6 @@ serde_yaml = "0.8"
 structopt = "0.3"
 
 [dev-dependencies]
+assert_cmd = "1.0.1"
 grcov = "0.5.15"
 pretty_assertions = "0.6.1"
