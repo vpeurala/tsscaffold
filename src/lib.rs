@@ -47,7 +47,7 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
                 sql_type: column_properties
                     .difference(&keywords)
                     .next()
-                    .unwrap()
+                    .unwrap_or(&String::from("TEXT"))
                     .clone(),
             })
         }

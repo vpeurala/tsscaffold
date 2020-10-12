@@ -21,12 +21,6 @@ fn main() -> io::Result<()> {
     about = "Does useful stuff for you if you are writing a TS + Postgres application using PgTyped library."
 )]
 struct TsScaffoldCommand {
-    #[structopt(subcommand)]
-    command: TsScaffoldSubCommand,
-}
-
-#[derive(Debug, StructOpt)]
-struct TsScaffoldSubCommand {
     #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
     #[structopt(short = "o", long = "output", parse(from_os_str))]
@@ -53,17 +47,17 @@ impl TsScaffoldSubCommandKind {
 }
 
 fn run(opt: TsScaffoldCommand) -> io::Result<()> {
-    let input: Box<dyn Read> = match opt.command.input {
+    let input: Box<dyn Read> = match opt.input {
         None => Box::new(io::stdin()),
         Some(i) => Box::new(fs::File::open(i)?),
     };
 
-    let output: Box<dyn Write> = match opt.command.output {
+    let output: Box<dyn Write> = match opt.output {
         None => Box::new(io::stdout()),
         Some(o) => Box::new(fs::File::create(o)?),
     };
 
     let tables: Vec<Table> = parse_yaml(input)?;
 
-    opt.command.kind.run(tables, output)
+    opt.kind.run(tables, output)
 }
