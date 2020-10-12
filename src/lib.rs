@@ -39,11 +39,12 @@ pub fn yaml_to_tables(yaml: BTreeMap<String, Vec<String>>) -> Vec<Table> {
                     column_properties.insert(part.to_uppercase());
                 }
             }
-            let keywords = hashset! {String::from("PK"), String::from("NULLABLE")};
+            let keywords = hashset! {String::from("PK"), String::from("NULLABLE"), String::from("GENERATED")};
             columns.push(Column {
                 name: column_name.to_owned(),
                 is_pk: column_properties.contains("PK"),
                 is_nullable: column_properties.contains("NULLABLE"),
+                is_generated: column_properties.contains("GENERATED"),
                 sql_type: column_properties
                     .difference(&keywords)
                     .next()

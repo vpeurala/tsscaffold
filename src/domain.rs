@@ -35,4 +35,5 @@ pub struct Column {
     pub sql_type: String,
     pub is_pk: bool,
     pub is_nullable: bool,
+    pub is_generated: bool
 }
